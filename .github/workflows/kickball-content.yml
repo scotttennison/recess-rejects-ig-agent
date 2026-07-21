@@ -1,0 +1,44 @@
+name: Recess Rejects — Kickball Content Agent
+
+on:
+  # Scheduled runs — 3x/week, adjust cron as you like.
+  # Cron is UTC. Example below fires ~9am Pacific on Mon/Wed/Fri (PST, UTC-8).
+  # Adjust the hour if you're on daylight saving (PDT, UTC-7) or want a different time.
+  schedule:
+    - cron: "0 17 * * 1,3,5"
+
+  # Manual one-off trigger — go to Actions tab > this workflow > "Run workflow"
+  # and type a topic. Leave blank to just pull the next theme in rotation.
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: "Optional: specific topic for a one-off post (leave blank for auto-rotation)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  generate-and-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: .
+
+      - name: Generate post and create Buffer draft
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_CHANNEL_ID: ${{ secrets.BUFFER_CHANNEL_ID }}
+        run: node scripts/generate-post.mjs "${{ github.event.inputs.topic }}"

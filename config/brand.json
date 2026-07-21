@@ -1,0 +1,28 @@
+{
+  "brandName": "Recess Rejects",
+  "tagline": "Last Picked. First to the Bar.",
+  "positioning": "Grunt Style for adult rec league sports — apparel for people who play kickball, dodgeball, bocce, cornhole, pickleball and treat the after-game beers as seriously as the game itself.",
+  "audience": "Adults 25-45 in recreational sports leagues who identify with self-deprecating, fun-first rec league culture.",
+  "currentSportFocus": ["kickball"],
+  "voice": {
+    "tone": "Self-deprecating, funny, a little cocky about being bad at sports but great at post-game drinking. Never mean-spirited. Inclusive of every skill level — the whole point is nobody takes it too seriously.",
+    "doList": [
+      "Lean into rec league inside jokes (dodging the ball on purpose, sandbagging teams, showing up hungover, the walk of shame back to the outfield)",
+      "Reference the mascot (red kickball with a foot-shaped tongue) when relevant",
+      "Keep captions short and punchy — Instagram captions, not essays",
+      "Include a light call-to-action toward the shop when natural, never hard-sell",
+      "Use the tagline or riff on it occasionally, don't overuse it"
+    ],
+    "avoidList": [
+      "Corporate or generic sports-brand language",
+      "Genuinely competitive/serious athletic tone",
+      "Excessive hashtags (5-8 relevant ones max)",
+      "Content for sports not yet in the store (currently kickball only)"
+    ]
+  },
+  "visualStyle": {
+    "mascot": "Red kickball character with a tongue shaped like a foot, established brand asset",
+    "colorPalette": ["soft cream", "autumn orange/rust", "black", "red"],
+    "imageGuidance": "Illustrated/graphic style consistent with apparel branding, not photorealistic stock-photo style. Should feel like it could live on a t-shirt or social graphic, using the brand color palette."
+  }
+}

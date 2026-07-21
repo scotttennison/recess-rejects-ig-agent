@@ -1,0 +1,13 @@
+{
+  "name": "recess-rejects-ig-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AI agent that drafts Recess Rejects Instagram content (Claude caption + Gemini image) into Buffer as a draft for manual approval.",
+  "scripts": {
+    "post": "node scripts/generate-post.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

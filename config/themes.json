@@ -1,0 +1,19 @@
+{
+  "themes": [
+    "The walk of shame back to the outfield after striking out",
+    "Sandbagging your rec league team's skill level to the other team",
+    "Showing up to the kickball game still hungover from last week's game",
+    "The one guy/gal on the team who takes kickball way too seriously",
+    "Post-game bar tab being bigger than the league registration fee",
+    "Getting picked last but being first in line at the bar after",
+    "The unspoken rules of rec league kickball (no bunting, catch it or don't, etc.)",
+    "Rain delay energy - just move the game to the bar early",
+    "The team jersey doubling as a bar outfit",
+    "Kickball injuries that are definitely just from bar stools, not the game",
+    "The team captain group chat chaos before game day",
+    "Trading defense for a good seat at the bar afterward",
+    "New season, same last place finish, same great time",
+    "The unofficial MVP award going to whoever buys the first round"
+  ],
+  "rotationNote": "Script picks the next unused theme in order, cycling back to the start once the list is exhausted. Add new kickball-specific themes here anytime; expand to other sports once they're live in the store."
+}
