@@ -4,14 +4,13 @@
  *
  * Flow:
  *   1. Pick a theme (from CLI arg for one-offs, or next-in-rotation for scheduled runs)
- *   2. Ask Claude to write a caption + hashtags in brand voice
+ *   2. Ask Gemini to write a caption + hashtags in brand voice
  *   3. Ask Gemini (Nano Banana) to generate an accompanying image
  *   4. Commit the image to this repo (so it has a public raw.githubusercontent.com URL)
  *   5. Push a DRAFT post to Buffer via its GraphQL API (nothing goes live automatically)
  *
  * Required environment variables (set as GitHub Actions secrets):
- *   ANTHROPIC_API_KEY   - Claude API key
- *   GEMINI_API_KEY      - Google AI Studio / Gemini API key
+ *   GEMINI_API_KEY      - Google AI Studio / Gemini API key (used for both caption text and image generation)
  *   BUFFER_API_KEY      - Buffer personal API key (org owner only)
  *   BUFFER_CHANNEL_ID   - Buffer channel ID for the Recess Rejects Instagram account
  *   GITHUB_REPOSITORY   - auto-provided by GitHub Actions, used to build the raw image URL
@@ -25,7 +24,6 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const BUFFER_API_KEY = process.env.BUFFER_API_KEY;
 const BUFFER_CHANNEL_ID = process.env.BUFFER_CHANNEL_ID;
@@ -40,7 +38,6 @@ function requireEnv(name, value) {
 }
 
 for (const [name, value] of Object.entries({
-  ANTHROPIC_API_KEY,
   GEMINI_API_KEY,
   BUFFER_API_KEY,
   BUFFER_CHANNEL_ID,
@@ -78,7 +75,7 @@ async function pickTheme() {
   return { theme: themesConfig.themes[nextIndex], source: "scheduled" };
 }
 
-// ---------- 2. Generate caption via Claude ----------
+// ---------- 2. Generate caption via Gemini (text model) ----------
 
 async function generateCaption(brand, theme) {
   const systemPrompt = `You are the social media voice of ${brand.brandName}, a rec-league apparel brand.
@@ -96,28 +93,32 @@ ${brand.voice.avoidList.map((d) => `- ${d}`).join("\n")}
 Write ONE Instagram caption for the theme given by the user. Return ONLY valid JSON, no markdown fences, no preamble, in this exact shape:
 {"caption": "...", "hashtags": ["#tag1", "#tag2"], "imagePrompt": "a detailed visual description for an image generator, incorporating the brand mascot and color palette where it fits"}`;
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": ANTHROPIC_API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 700,
-      system: systemPrompt,
-      messages: [{ role: "user", content: `Theme: ${theme}` }],
-    }),
-  });
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ parts: [{ text: `Theme: ${theme}` }] }],
+        generationConfig: { responseMimeType: "application/json" },
+      }),
+    }
+  );
 
   if (!res.ok) {
-    throw new Error(`Claude API error: ${res.status} ${await res.text()}`);
+    throw new Error(`Gemini text API error: ${res.status} ${await res.text()}`);
   }
 
   const data = await res.json();
-  const textBlock = data.content.find((c) => c.type === "text");
-  const cleaned = textBlock.text.trim().replace(/^```json\s*|\s*```$/g, "");
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  const textPart = parts.find((p) => p.text);
+
+  if (!textPart) {
+    throw new Error(`Gemini text response had no text part: ${JSON.stringify(data)}`);
+  }
+
+  const cleaned = textPart.text.trim().replace(/^```json\s*|\s*```$/g, "");
   return JSON.parse(cleaned);
 }
 
