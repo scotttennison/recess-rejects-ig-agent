@@ -207,7 +207,7 @@ async function createBufferDraft({ caption, hashtags, imageUrl }) {
       saveToDraft: true,
       assets: [{ image: { url: imageUrl } }],
       metadata: {
-        instagram: { type: "post" },
+        instagram: { type: "post", shouldShareToFeed: true },
       },
     },
   };
