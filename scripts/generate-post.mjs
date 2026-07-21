@@ -94,7 +94,7 @@ Write ONE Instagram caption for the theme given by the user. Return ONLY valid J
 {"caption": "...", "hashtags": ["#tag1", "#tag2"], "imagePrompt": "a detailed visual description for an image generator, incorporating the brand mascot and color palette where it fits"}`;
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/gemini-3.6-flash:generateContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent`,
     {
       method: "POST",
       headers: {
@@ -131,7 +131,7 @@ async function generateImage(brand, imagePrompt) {
   const fullPrompt = `${imagePrompt}. Style: ${brand.visualStyle.imageGuidance}. Color palette: ${brand.visualStyle.colorPalette.join(", ")}. Square 1:1 aspect ratio for Instagram.`;
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/gemini-3.1-flash-image:generateContent`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent`,
     {
       method: "POST",
       headers: {
