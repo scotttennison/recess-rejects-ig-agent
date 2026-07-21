@@ -174,6 +174,7 @@ async function saveImageAndGetUrl(imageBuffer) {
   execSync(`git config user.email "bot@recessrejects.local"`, { cwd: ROOT });
   execSync(`git add ${relDir}/${filename}`, { cwd: ROOT });
   execSync(`git commit -m "Add generated post image ${filename}"`, { cwd: ROOT });
+  execSync(`git pull --rebase --autostash`, { cwd: ROOT });
   execSync(`git push`, { cwd: ROOT });
 
   return `https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_REF_NAME}/${relDir}/${filename}`;
