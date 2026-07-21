@@ -206,6 +206,9 @@ async function createBufferDraft({ caption, hashtags, imageUrl }) {
       mode: "addToQueue",
       saveToDraft: true,
       assets: [{ image: { url: imageUrl } }],
+      metadata: {
+        instagram: { type: "post" },
+      },
     },
   };
 
