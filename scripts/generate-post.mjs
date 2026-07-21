@@ -249,8 +249,7 @@ async function main() {
 main().catch((err) => {
   console.error("❌ Agent run failed:", err);
   process.exit(1);
-});  }
-}
+}); 
 
 for (const [name, value] of Object.entries({
   GEMINI_API_KEY,
