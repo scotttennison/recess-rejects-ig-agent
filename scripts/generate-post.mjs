@@ -128,7 +128,7 @@ Write ONE Instagram caption for the theme given by the user. Return ONLY valid J
 // ---------- 3. Generate image via Gemini (Nano Banana) ----------
 
 async function generateImage(brand, imagePrompt) {
-  const fullPrompt = `Image 1 attached is the official, exact mascot character design for this brand — a red kickball character whose tongue is shaped exactly like a human foot. Do not redesign, reinterpret, or simplify the mascot's face or tongue in any way. Copy the mascot's face, tongue shape, and color exactly as shown in image 1, unchanged. Only change the pose, body position, and surrounding scene to fit this new context: ${imagePrompt}. Style: ${brand.visualStyle.imageGuidance}. Color palette: ${brand.visualStyle.colorPalette.join(", ")}. Square 1:1 aspect ratio for Instagram.`;
+  const fullPrompt = `Image 1 attached is the official, exact mascot character design for this brand — a red kickball character. Its tongue is shaped exactly like a human foot sticking out of its mouth: it has a distinct heel, an arch, and five small rounded toes at the end, not a normal flat tongue. This foot-shaped tongue is the single most important and unusual identifying feature of the mascot — do not simplify it into a regular tongue shape. Copy the mascot's face, this exact foot-shaped tongue, and its color exactly as shown in image 1, unchanged. Only change the pose, body position, and surrounding scene to fit this new context: ${imagePrompt}. Style: ${brand.visualStyle.imageGuidance}. Color palette: ${brand.visualStyle.colorPalette.join(", ")}. Square 1:1 aspect ratio for Instagram.`;
 
   const logoPath = path.join(ROOT, "assets", "NoWordsLogo.png");
   const logoBuffer = await fs.readFile(logoPath);
