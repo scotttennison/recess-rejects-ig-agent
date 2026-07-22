@@ -135,6 +135,10 @@ async function generateImage(brand, imagePrompt) {
   const logoBuffer = await fs.readFile(logoPath);
   const logoBase64 = logoBuffer.toString("base64");
 
+  console.log("---- FULL SCENE GENERATION PROMPT ----");
+  console.log(fullPrompt);
+  console.log("---------------------------------------");
+
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent`,
     {
@@ -179,6 +183,10 @@ async function fixTongue(sceneImageBuffer, logoBuffer) {
   const logoBase64 = logoBuffer.toString("base64");
 
   const editPrompt = `Image 1 is a cartoon illustration with a mascot character. Image 2 is the official reference showing the mascot's correct tongue design: a tongue shaped exactly like a human foot, with a heel, arch, and five distinct rounded toes. Edit image 1 so that the mascot's tongue is replaced with this exact foot-shaped tongue design from image 2 — heel, arch, and five toes clearly visible. Do not change anything else in image 1: keep the same pose, background, composition, colors, and text exactly as they are. Only fix the tongue shape.`;
+
+  console.log("---- FULL TONGUE-FIX PROMPT ----");
+  console.log(editPrompt);
+  console.log("---------------------------------");
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent`,
