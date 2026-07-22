@@ -128,7 +128,11 @@ Write ONE Instagram caption for the theme given by the user. Return ONLY valid J
 // ---------- 3. Generate image via Gemini (Nano Banana) ----------
 
 async function generateImage(brand, imagePrompt) {
-  const fullPrompt = `${imagePrompt}. Style: ${brand.visualStyle.imageGuidance}. Color palette: ${brand.visualStyle.colorPalette.join(", ")}. Square 1:1 aspect ratio for Instagram.`;
+  const fullPrompt = `Using the attached mascot reference image, create a new illustration: ${imagePrompt}. Keep the mascot's design — especially the foot-shaped tongue — exactly consistent with the reference image, just placed in this new scene/pose. Style: ${brand.visualStyle.imageGuidance}. Color palette: ${brand.visualStyle.colorPalette.join(", ")}. Square 1:1 aspect ratio for Instagram.`;
+
+  const logoPath = path.join(ROOT, "assets", "NoWordsLogo.png");
+  const logoBuffer = await fs.readFile(logoPath);
+  const logoBase64 = logoBuffer.toString("base64");
 
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent`,
@@ -139,7 +143,14 @@ async function generateImage(brand, imagePrompt) {
         "x-goog-api-key": GEMINI_API_KEY,
       },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: fullPrompt }] }],
+        contents: [
+          {
+            parts: [
+              { inlineData: { mimeType: "image/png", data: logoBase64 } },
+              { text: fullPrompt },
+            ],
+          },
+        ],
         generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
       }),
     }
