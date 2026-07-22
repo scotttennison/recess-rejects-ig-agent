@@ -129,11 +129,15 @@ Write ONE Instagram caption for the theme given by the user. Return ONLY valid J
 // ---------- 3. Generate scene image via Gemini (Nano Banana) ----------
 
 async function generateImage(brand, imagePrompt) {
-  const fullPrompt = `Image 1 attached is the official, exact mascot character design for this brand — a red kickball character. Its tongue is shaped exactly like a human foot sticking out of its mouth: it has a distinct heel, an arch, and five small rounded toes at the end, not a normal flat tongue. This foot-shaped tongue is the single most important and unusual identifying feature of the mascot — do not simplify it into a regular tongue shape. Copy the mascot's face, this exact foot-shaped tongue, and its color exactly as shown in image 1, unchanged. Only change the pose, body position, and surrounding scene to fit this new context: ${imagePrompt}. Style: ${brand.visualStyle.imageGuidance}. Color palette: ${brand.visualStyle.colorPalette.join(", ")}. Square 1:1 aspect ratio for Instagram.`;
+  const fullPrompt = `Image 1 attached is the official, exact mascot character design for this brand — a red kickball character. Its tongue is shaped exactly like a human foot sticking out of its mouth: it has a distinct heel, an arch, and five small rounded toes at the end, not a normal flat tongue. This foot-shaped tongue is the single most important and unusual identifying feature of the mascot — do not simplify it into a regular tongue shape. Copy the mascot's face, this exact foot-shaped tongue, and its color exactly as shown in image 1, unchanged. Only change the pose, body position, and surrounding scene to fit this new context: ${imagePrompt}. Image 2 attached is the brand's official wordmark showing the exact font style, letterforms, and drop-shadow effect to use for any headline text or title text that appears in this illustration — match this bold condensed athletic lettering style exactly for any text in the image. Style: ${brand.visualStyle.imageGuidance}. Color palette: ${brand.visualStyle.colorPalette.join(", ")}. Square 1:1 aspect ratio for Instagram.`;
 
   const logoPath = path.join(ROOT, "assets", "NoWordsLogo.png");
   const logoBuffer = await fs.readFile(logoPath);
   const logoBase64 = logoBuffer.toString("base64");
+
+  const wordmarkPath = path.join(ROOT, "assets", "NameLogo.png");
+  const wordmarkBuffer = await fs.readFile(wordmarkPath);
+  const wordmarkBase64 = wordmarkBuffer.toString("base64");
 
   console.log("---- FULL SCENE GENERATION PROMPT ----");
   console.log(fullPrompt);
@@ -152,6 +156,7 @@ async function generateImage(brand, imagePrompt) {
           {
             parts: [
               { inlineData: { mimeType: "image/png", data: logoBase64 } },
+              { inlineData: { mimeType: "image/png", data: wordmarkBase64 } },
               { text: fullPrompt },
             ],
           },
