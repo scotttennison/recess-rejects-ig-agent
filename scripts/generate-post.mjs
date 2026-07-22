@@ -5,7 +5,8 @@
  * Flow:
  *   1. Pick a theme (from CLI arg for one-offs, or next-in-rotation for scheduled runs)
  *   2. Ask Gemini to write a caption + hashtags in brand voice
- *   3. Ask Gemini (Nano Banana) to generate an accompanying image
+ *   3. Ask Gemini (Nano Banana) to generate an accompanying scene image
+ *   3b. Ask Gemini to fix the tongue against the real logo reference
  *   4. Commit the image to this repo (so it has a public raw.githubusercontent.com URL)
  *   5. Push a DRAFT post to Buffer via its GraphQL API (nothing goes live automatically)
  *
@@ -125,7 +126,7 @@ Write ONE Instagram caption for the theme given by the user. Return ONLY valid J
   return JSON.parse(cleaned);
 }
 
-// ---------- 3. Generate image via Gemini (Nano Banana) ----------
+// ---------- 3. Generate scene image via Gemini (Nano Banana) ----------
 
 async function generateImage(brand, imagePrompt) {
   const fullPrompt = `Image 1 attached is the official, exact mascot character design for this brand — a red kickball character. Its tongue is shaped exactly like a human foot sticking out of its mouth: it has a distinct heel, an arch, and five small rounded toes at the end, not a normal flat tongue. This foot-shaped tongue is the single most important and unusual identifying feature of the mascot — do not simplify it into a regular tongue shape. Copy the mascot's face, this exact foot-shaped tongue, and its color exactly as shown in image 1, unchanged. Only change the pose, body position, and surrounding scene to fit this new context: ${imagePrompt}. Style: ${brand.visualStyle.imageGuidance}. Color palette: ${brand.visualStyle.colorPalette.join(", ")}. Square 1:1 aspect ratio for Instagram.`;
@@ -166,6 +167,53 @@ async function generateImage(brand, imagePrompt) {
 
   if (!imagePart) {
     throw new Error("Gemini response did not contain image data.");
+  }
+
+  return Buffer.from(imagePart.inlineData.data, "base64");
+}
+
+// ---------- 3b. Fix the tongue against the reference logo ----------
+
+async function fixTongue(sceneImageBuffer, logoBuffer) {
+  const sceneBase64 = sceneImageBuffer.toString("base64");
+  const logoBase64 = logoBuffer.toString("base64");
+
+  const editPrompt = `Image 1 is a cartoon illustration with a mascot character. Image 2 is the official reference showing the mascot's correct tongue design: a tongue shaped exactly like a human foot, with a heel, arch, and five distinct rounded toes. Edit image 1 so that the mascot's tongue is replaced with this exact foot-shaped tongue design from image 2 — heel, arch, and five toes clearly visible. Do not change anything else in image 1: keep the same pose, background, composition, colors, and text exactly as they are. Only fix the tongue shape.`;
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY,
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { inlineData: { mimeType: "image/png", data: sceneBase64 } },
+              { inlineData: { mimeType: "image/png", data: logoBase64 } },
+              { text: editPrompt },
+            ],
+          },
+        ],
+        generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+      }),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Gemini tongue-fix API error: ${res.status} ${await res.text()}`);
+  }
+
+  const data = await res.json();
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  const imagePart = parts.find((p) => p.inlineData);
+
+  if (!imagePart) {
+    console.warn("Tongue fix pass returned no image — using original scene image instead.");
+    return sceneImageBuffer;
   }
 
   return Buffer.from(imagePart.inlineData.data, "base64");
@@ -255,7 +303,10 @@ async function main() {
   console.log(`Image prompt: ${imagePrompt}`);
 
   const imageBuffer = await generateImage(brand, imagePrompt);
-  const imageUrl = await saveImageAndGetUrl(imageBuffer);
+  console.log("Base scene generated, running tongue-fix pass...");
+  const logoBuffer = await fs.readFile(path.join(ROOT, "assets", "NoWordsLogo.png"));
+  const fixedImageBuffer = await fixTongue(imageBuffer, logoBuffer);
+  const imageUrl = await saveImageAndGetUrl(fixedImageBuffer);
   console.log(`Image URL: ${imageUrl}`);
 
   await createBufferDraft({ caption, hashtags, imageUrl });
