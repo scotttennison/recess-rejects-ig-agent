@@ -1,0 +1,27 @@
+name: Weekly Newsletter Draft
+
+on:
+  schedule:
+    # Every Sunday 22:00 UTC (~ Sunday 3pm Pacific) so it's ready to review Monday morning
+    - cron: '0 22 * * 0'
+  workflow_dispatch: {}
+
+jobs:
+  generate-newsletter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate newsletter draft
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/generate_newsletter.py >> "$GITHUB_STEP_SUMMARY"
