@@ -118,57 +118,69 @@ Return ONLY raw JSON (no markdown fences, no preamble) matching this shape:
 
 def render_html(notes, copy):
     products_html = "".join(
-        f'<tr><td style="padding:12px 0;border-bottom:1px solid #e8e2d6;">'
-        f'<strong style="color:#1a1a1a;">{name}</strong><br>'
-        f'<span style="color:#4a4a4a;">{blurb}</span></td></tr>'
+        f'<tr><td style="padding:12px 0;border-bottom:1px solid #e8e2d6;font-family:Arial,Helvetica,sans-serif;">'
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td>'
+        f'<span style="color:#1a1a1a;font-size:15px;font-weight:bold;">{name}</span>'
+        f'</td></tr><tr><td style="padding-top:4px;">'
+        f'<span style="color:#4a4a4a;font-size:14px;">{blurb}</span>'
+        f'</td></tr></table></td></tr>'
         for name, blurb in copy.get("product_blurbs", {}).items()
     )
 
-    return f"""<!DOCTYPE html>
-<html>
-<body style="margin:0;padding:0;background-color:#f2ece0;font-family:Arial,Helvetica,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2ece0;padding:24px 0;">
-    <tr>
-      <td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#fffdf8;border-radius:8px;overflow:hidden;">
-          <tr>
-            <td style="background-color:#c0392b;padding:28px 32px;text-align:center;">
-              <div style="color:#fffdf8;font-size:26px;font-weight:bold;letter-spacing:0.5px;">RECESS REJECTS</div>
-              <div style="color:#f2ece0;font-size:13px;letter-spacing:1px;margin-top:4px;">LAST PICKED. FIRST TO THE BAR.</div>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:32px;">
-              <h1 style="color:#1a1a1a;font-size:22px;margin:0 0 12px;">{copy.get('headline','')}</h1>
-              <p style="color:#4a4a4a;font-size:15px;line-height:1.5;margin:0 0 24px;">{copy.get('intro_blurb','')}</p>
+    # NOTE: this is a fragment, not a full document. Paste only this into
+    # Shopify Email's "Edit code" / HTML source box for a content section -
+    # do NOT wrap it in <html>/<body>, Shopify strips that wrapper anyway and
+    # taking it out ourselves avoids losing spacing along with it.
+    return f"""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2ece0;">
+<tr><td align="center" style="padding:24px 0;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#fffdf8;border-radius:8px;">
 
-              <div style="background-color:#f2ece0;border-left:4px solid #c0392b;padding:14px 18px;margin-bottom:24px;">
-                <strong style="color:#1a1a1a;">This week:</strong>
-                <span style="color:#4a4a4a;"> {copy.get('promo_blurb','')}</span>
-              </div>
+<tr><td style="background-color:#c0392b;padding:28px 32px;text-align:center;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td align="center" style="font-family:Arial,Helvetica,sans-serif;color:#fffdf8;font-size:26px;font-weight:bold;letter-spacing:0.5px;padding-bottom:6px;">RECESS REJECTS</td></tr>
+<tr><td align="center" style="font-family:Arial,Helvetica,sans-serif;color:#f2ece0;font-size:13px;letter-spacing:1px;">LAST PICKED. FIRST TO THE BAR.</td></tr>
+</table>
+</td></tr>
 
-              <h2 style="color:#1a1a1a;font-size:16px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #1a1a1a;padding-bottom:8px;">On the Field</h2>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                {products_html}
-              </table>
+<tr><td style="padding:32px;font-family:Arial,Helvetica,sans-serif;">
 
-              <h2 style="color:#1a1a1a;font-size:16px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #1a1a1a;padding-bottom:8px;margin-top:28px;">From the Sidelines</h2>
-              <p style="color:#4a4a4a;font-size:15px;line-height:1.5;">{copy.get('ig_blurb','')}</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="color:#1a1a1a;font-size:22px;font-weight:bold;padding-bottom:12px;">{copy.get('headline','')}</td></tr>
+<tr><td style="color:#4a4a4a;font-size:15px;line-height:1.5;padding-bottom:24px;">{copy.get('intro_blurb','')}</td></tr>
+</table>
 
-              <p style="color:#1a1a1a;font-size:15px;font-weight:bold;margin-top:28px;">{copy.get('sign_off','')}</p>
-            </td>
-          </tr>
-          <tr>
-            <td style="background-color:#1a1a1a;padding:20px 32px;text-align:center;">
-              <span style="color:#f2ece0;font-size:12px;">Recess Rejects &middot; Apparel for adult rec league athletes</span>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"""
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2ece0;margin-bottom:24px;">
+<tr><td style="border-left:4px solid #c0392b;padding:14px 18px;">
+<span style="color:#1a1a1a;font-weight:bold;">This week:</span>
+<span style="color:#4a4a4a;"> {copy.get('promo_blurb','')}</span>
+</td></tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td style="color:#1a1a1a;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #1a1a1a;padding-bottom:8px;">On the Field</td></tr>
+</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+{products_html}
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;">
+<tr><td style="color:#1a1a1a;font-size:16px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;border-bottom:2px solid #1a1a1a;padding-bottom:8px;">From the Sidelines</td></tr>
+<tr><td style="color:#4a4a4a;font-size:15px;line-height:1.5;padding-top:12px;">{copy.get('ig_blurb','')}</td></tr>
+</table>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;">
+<tr><td style="color:#1a1a1a;font-size:15px;font-weight:bold;">{copy.get('sign_off','')}</td></tr>
+</table>
+
+</td></tr>
+
+<tr><td style="background-color:#1a1a1a;padding:20px 32px;text-align:center;">
+<span style="font-family:Arial,Helvetica,sans-serif;color:#f2ece0;font-size:12px;">Recess Rejects &middot; Apparel for adult rec league athletes</span>
+</td></tr>
+
+</table>
+</td></tr>
+</table>"""
 
 
 def main():
@@ -180,7 +192,7 @@ def main():
     print(f"## 📬 Newsletter Draft — Week of {notes['week_of']}\n")
     print(f"**Subject line:** {copy.get('subject_line','')}  ")
     print(f"**Preview text:** {copy.get('preview_text','')}\n")
-    print("### Copy-paste this into Shopify Email (HTML source view)\n")
+    print("### Copy-paste this into Shopify Email's HTML/code section (fragment only \u2014 don't wrap in <html>/<body>)\n")
     print("```html")
     print(html)
     print("```\n")
