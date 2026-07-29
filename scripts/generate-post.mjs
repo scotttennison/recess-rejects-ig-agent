@@ -55,9 +55,11 @@ async function loadJson(relPath) {
 // ---------- 1. Pick a theme ----------
 
 async function pickTheme() {
-  const cliTopic = process.argv.slice(2).join(" ").trim();
+  // TOPIC_INPUT comes from the workflow_dispatch input via `env:`, not
+  // interpolated into the shell command. Falls back to a CLI arg for local runs.
+  const cliTopic = (process.env.TOPIC_INPUT || process.argv.slice(2).join(" ")).trim();
   if (cliTopic) {
-    return { theme: cliTopic, source: "manual" };
+    return { theme: cliTopic, source: "manual", stateFileChanged: false };
   }
 
   const themesConfig = await loadJson("config/themes.json");
@@ -73,7 +75,7 @@ async function pickTheme() {
   const nextIndex = (state.lastIndex + 1) % themesConfig.themes.length;
   await fs.writeFile(statePath, JSON.stringify({ lastIndex: nextIndex }, null, 2));
 
-  return { theme: themesConfig.themes[nextIndex], source: "scheduled" };
+  return { theme: themesConfig.themes[nextIndex], source: "scheduled", stateFileChanged: true };
 }
 
 // ---------- 2. Generate caption via Gemini (text model) ----------
@@ -226,15 +228,15 @@ async function fixTongue(sceneImageBuffer, logoBuffer) {
 
   if (!imagePart) {
     console.warn("Tongue fix pass returned no image — using original scene image instead.");
-    return sceneImageBuffer;
+    return { buffer: sceneImageBuffer, failed: true };
   }
 
-  return Buffer.from(imagePart.inlineData.data, "base64");
+  return { buffer: Buffer.from(imagePart.inlineData.data, "base64"), failed: false };
 }
 
 // ---------- 4. Save image to repo + get public URL ----------
 
-async function saveImageAndGetUrl(imageBuffer) {
+async function saveImageAndGetUrl(imageBuffer, extraFilesToCommit = []) {
   const filename = `post-${Date.now()}.png`;
   const relDir = "generated-images";
   const absDir = path.join(ROOT, relDir);
@@ -245,6 +247,9 @@ async function saveImageAndGetUrl(imageBuffer) {
   execSync(`git config user.name "recess-rejects-bot"`, { cwd: ROOT });
   execSync(`git config user.email "bot@recessrejects.local"`, { cwd: ROOT });
   execSync(`git add ${relDir}/${filename}`, { cwd: ROOT });
+  for (const relFile of extraFilesToCommit) {
+    execSync(`git add ${relFile}`, { cwd: ROOT });
+  }
   execSync(`git commit -m "Add generated post image ${filename}"`, { cwd: ROOT });
   execSync(`git pull --rebase --autostash`, { cwd: ROOT });
   execSync(`git push`, { cwd: ROOT });
@@ -307,7 +312,7 @@ async function createBufferDraft({ caption, hashtags, imageUrl }) {
 
 async function main() {
   const brand = await loadJson("config/brand.json");
-  const { theme, source } = await pickTheme();
+  const { theme, source, stateFileChanged } = await pickTheme();
   console.log(`Theme (${source}): ${theme}`);
 
   const { caption, hashtags, imagePrompt } = await generateCaption(brand, theme);
@@ -318,11 +323,23 @@ async function main() {
   const imageBuffer = await generateImage(brand, imagePrompt);
   console.log("Base scene generated, running tongue-fix pass...");
   const logoBuffer = await fs.readFile(path.join(ROOT, "assets", "NoWordsLogo.png"));
-  const fixedImageBuffer = await fixTongue(imageBuffer, logoBuffer);
-  const imageUrl = await saveImageAndGetUrl(fixedImageBuffer);
+  const { buffer: fixedImageBuffer, failed: tongueFixFailed } = await fixTongue(imageBuffer, logoBuffer);
+
+  const extraFilesToCommit = stateFileChanged ? ["config/rotation-state.json"] : [];
+  const imageUrl = await saveImageAndGetUrl(fixedImageBuffer, extraFilesToCommit);
   console.log(`Image URL: ${imageUrl}`);
 
-  await createBufferDraft({ caption, hashtags, imageUrl });
+  const draftCaption = tongueFixFailed
+    ? `⚠️ TONGUE FIX FAILED — REVIEW IMAGE BEFORE APPROVING ⚠️\n\n${caption}`
+    : caption;
+  await createBufferDraft({ caption: draftCaption, hashtags, imageUrl });
+
+  if (tongueFixFailed) {
+    // The draft still went out for manual review, but mark the run as
+    // failed so the failure-alert step fires and this doesn't go unnoticed.
+    console.error("❌ Tongue-fix pass failed — draft created but needs manual image review.");
+    process.exitCode = 1;
+  }
 }
 
 main().catch((err) => {
