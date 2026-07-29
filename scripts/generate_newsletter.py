@@ -36,9 +36,16 @@ Never corporate, never earnest. Short punchy sentences. Rec league humor
 """
 
 
-def pick_gemini_model():
+EXCLUDED_TERMS = (
+    "image", "vision", "omni", "audio", "tts", "live", "embedding",
+    "aqa", "learnlm", "computer-use", "native-audio",
+)
+
+
+def list_gemini_text_candidates():
     """Check available Gemini models via the API rather than hardcoding one,
-    since Google deprecates model names frequently."""
+    since Google deprecates model names frequently. Returns candidates ordered
+    newest/most-preferred first; excludes non-text-generation model variants."""
     resp = requests.get(
         f"https://generativelanguage.googleapis.com/v1beta/models?key={GEMINI_API_KEY}",
         timeout=30,
@@ -49,13 +56,13 @@ def pick_gemini_model():
         m["name"] for m in models
         if "generateContent" in m.get("supportedGenerationMethods", [])
         and "flash" in m["name"]
-        and "image" not in m["name"]
+        and not any(term in m["name"] for term in EXCLUDED_TERMS)
     ]
-    # Prefer the newest-looking flash text model
-    candidates.sort(reverse=True)
+    # Prefer stable names over "-preview"/"-exp" variants, then newest-looking first
+    candidates.sort(key=lambda n: ("preview" in n or "exp" in n, n), reverse=True)
     if not candidates:
         raise RuntimeError("No suitable Gemini text model found")
-    return candidates[0]
+    return candidates
 
 
 def load_notes():
@@ -67,7 +74,7 @@ def load_notes():
     return notes
 
 
-def call_gemini(model, notes):
+def call_gemini(candidates, notes):
     prompt = f"""{BRAND_VOICE}
 
 Write copy for this week's Recess Rejects email newsletter using this week's inputs:
@@ -89,16 +96,24 @@ Return ONLY raw JSON (no markdown fences, no preamble) matching this shape:
   "sign_off": "short sign-off line in brand voice"
 }}
 """
-    resp = requests.post(
-        f"https://generativelanguage.googleapis.com/v1beta/{model}:generateContent?key={GEMINI_API_KEY}",
-        json={"contents": [{"parts": [{"text": prompt}]}]},
-        timeout=60,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-    text = text.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-    return json.loads(text)
+    last_error = None
+    for model in candidates:
+        try:
+            resp = requests.post(
+                f"https://generativelanguage.googleapis.com/v1beta/{model}:generateContent?key={GEMINI_API_KEY}",
+                json={"contents": [{"parts": [{"text": prompt}]}]},
+                timeout=60,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+            text = text.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+            return json.loads(text), model
+        except (requests.exceptions.HTTPError, KeyError, IndexError, json.JSONDecodeError) as e:
+            print(f"::warning::Model {model} failed ({e}), trying next candidate", file=sys.stderr)
+            last_error = e
+            continue
+    raise RuntimeError(f"All Gemini model candidates failed. Last error: {last_error}")
 
 
 def render_html(notes, copy):
@@ -158,8 +173,8 @@ def render_html(notes, copy):
 
 def main():
     notes = load_notes()
-    model = pick_gemini_model()
-    copy = call_gemini(model, notes)
+    candidates = list_gemini_text_candidates()
+    copy, model = call_gemini(candidates, notes)
     html = render_html(notes, copy)
 
     print(f"## 📬 Newsletter Draft — Week of {notes['week_of']}\n")
