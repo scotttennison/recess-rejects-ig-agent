@@ -2,7 +2,12 @@
 """
 Generates the weekly Recess Rejects newsletter draft.
 
-- Pulls context from newsletter/weekly_notes.json
+- Picks the next theme and next batch of featured products in rotation
+  (newsletter/newsletter_themes.json, newsletter/products.json), persisting
+  progress in newsletter/rotation-state.json the same way the Instagram
+  pipeline persists config/rotation-state.json.
+- Pulls manually-curated context from newsletter/weekly_notes.json (promo,
+  IG highlights, extra notes)
 - Calls Gemini for on-brand subject line + section copy (structured JSON output)
 - Renders a brand-styled HTML email
 - Prints everything to stdout, which the workflow redirects into
@@ -10,12 +15,17 @@ Generates the weekly Recess Rejects newsletter draft.
   same spot you'd check a Buffer draft.
 
 No secrets needed beyond GEMINI_API_KEY (same one used for the IG pipeline).
+
+newsletter/products.json is a manual snapshot of the live Shopify catalog,
+not a live API pull — refresh it whenever products are added, removed, or
+repriced.
 """
 
 import json
 import os
+import subprocess
 import sys
-from datetime import date, timedelta
+from datetime import date
 
 import requests
 
@@ -26,6 +36,12 @@ if not GEMINI_API_KEY:
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NOTES_PATH = os.path.join(REPO_ROOT, "newsletter", "weekly_notes.json")
+THEMES_PATH = os.path.join(REPO_ROOT, "newsletter", "newsletter_themes.json")
+PRODUCTS_PATH = os.path.join(REPO_ROOT, "newsletter", "products.json")
+STATE_PATH = os.path.join(REPO_ROOT, "newsletter", "rotation-state.json")
+STATE_REL_PATH = "newsletter/rotation-state.json"
+
+FEATURED_PRODUCTS_PER_WEEK = 2
 
 BRAND_VOICE = """
 You are writing copy for Recess Rejects, an adult rec-league sports apparel brand.
@@ -74,13 +90,71 @@ def load_notes():
     return notes
 
 
-def call_gemini(candidates, notes):
+def pick_theme_and_products():
+    """Advances theme/product rotation state locally (not yet committed —
+    that happens after generation succeeds, mirroring the IG pipeline)."""
+    with open(THEMES_PATH) as f:
+        themes = json.load(f)["themes"]
+    with open(PRODUCTS_PATH) as f:
+        products = json.load(f)["products"]
+
+    try:
+        with open(STATE_PATH) as f:
+            state = json.load(f)
+    except FileNotFoundError:
+        state = {"themeIndex": -1, "productIndex": -1}
+
+    theme_index = (state.get("themeIndex", -1) + 1) % len(themes)
+    theme = themes[theme_index]
+
+    product_start = (state.get("productIndex", -1) + 1) % len(products)
+    count = min(FEATURED_PRODUCTS_PER_WEEK, len(products))
+    featured = [products[(product_start + i) % len(products)] for i in range(count)]
+    next_product_index = (product_start + count - 1) % len(products)
+
+    new_state = {"themeIndex": theme_index, "productIndex": next_product_index}
+    with open(STATE_PATH, "w") as f:
+        json.dump(new_state, f, indent=2)
+
+    return theme, featured
+
+
+def commit_rotation_state():
+    """Commits and pushes the advanced rotation state, same pattern as the
+    IG pipeline's saveImageAndGetUrl — run only after generation succeeds,
+    so a failed run doesn't silently burn a rotation slot."""
+    run = lambda *args: subprocess.run(args, cwd=REPO_ROOT, check=True)
+    run("git", "config", "user.name", "recess-rejects-bot")
+    run("git", "config", "user.email", "bot@recessrejects.local")
+    run("git", "add", STATE_REL_PATH)
+
+    diff = subprocess.run(
+        ["git", "diff", "--cached", "--quiet"], cwd=REPO_ROOT
+    )
+    if diff.returncode == 0:
+        print("No rotation state change to commit.", file=sys.stderr)
+        return
+
+    run("git", "commit", "-m", "Advance newsletter theme/product rotation")
+    run("git", "pull", "--rebase", "--autostash")
+    run("git", "push")
+
+
+def call_gemini(candidates, notes, theme, featured_products):
+    product_lines = "\n".join(
+        f"- {p['name']} (${p['price']}): {p['description']}" for p in featured_products
+    )
     prompt = f"""{BRAND_VOICE}
 
-Write copy for this week's Recess Rejects email newsletter using this week's inputs:
+Write copy for this week's Recess Rejects email newsletter.
+
+This week's theme/angle: {theme}
 
 Promo: {notes.get('promo')}
-Featured products: {', '.join(notes.get('featured_products', []))}
+
+Featured products this week (write one blurb per product, tying it back to the theme above where it fits naturally):
+{product_lines}
+
 Instagram highlights: {'; '.join(notes.get('ig_highlights', []))}
 Extra notes: {notes.get('extra_notes') or 'none'}
 
@@ -88,10 +162,10 @@ Return ONLY raw JSON (no markdown fences, no preamble) matching this shape:
 {{
   "subject_line": "short, funny, under 50 chars",
   "preview_text": "inbox preview line, under 90 chars",
-  "headline": "big headline for top of email",
-  "intro_blurb": "1-2 sentences, brand voice, sets up the week",
+  "headline": "big headline for top of email, can riff on the week's theme",
+  "intro_blurb": "1-2 sentences, brand voice, sets up the week's theme",
   "promo_blurb": "1-2 sentences hyping the promo",
-  "product_blurbs": {{"<product name>": "1 sentence pitch", ...}},
+  "product_blurbs": {{"<product name, exactly as given above>": "1 sentence pitch", ...}},
   "ig_blurb": "1-2 sentences recapping IG highlights, playful",
   "sign_off": "short sign-off line in brand voice"
 }}
@@ -116,15 +190,23 @@ Return ONLY raw JSON (no markdown fences, no preamble) matching this shape:
     raise RuntimeError(f"All Gemini model candidates failed. Last error: {last_error}")
 
 
-def render_html(notes, copy):
+def render_html(notes, copy, theme, featured_products):
+    blurbs = copy.get("product_blurbs", {})
     products_html = "".join(
         f'<tr><td style="padding:12px 0;border-bottom:1px solid #e8e2d6;font-family:Arial,Helvetica,sans-serif;">'
-        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td>'
-        f'<span style="color:#1a1a1a;font-size:15px;font-weight:bold;">{name}</span>'
-        f'</td></tr><tr><td style="padding-top:4px;">'
-        f'<span style="color:#4a4a4a;font-size:14px;">{blurb}</span>'
-        f'</td></tr></table></td></tr>'
-        for name, blurb in copy.get("product_blurbs", {}).items()
+        f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
+        f'<td width="90" style="padding-right:16px;vertical-align:top;">'
+        f'<a href="{p["url"]}"><img src="{p["image"]}" width="90" height="90" alt="{p["name"]}" '
+        f'style="display:block;border-radius:6px;object-fit:cover;"></a>'
+        f'</td>'
+        f'<td style="vertical-align:top;">'
+        f'<a href="{p["url"]}" style="text-decoration:none;">'
+        f'<span style="color:#1a1a1a;font-size:15px;font-weight:bold;">{p["name"]}</span></a>'
+        f'<br><span style="color:#c0392b;font-size:14px;font-weight:bold;">${p["price"]}</span>'
+        f'<br><span style="color:#4a4a4a;font-size:14px;">{blurbs.get(p["name"], "")}</span>'
+        f'</td>'
+        f'</tr></table></td></tr>'
+        for p in featured_products
     )
 
     # NOTE: this is a fragment, not a full document. Paste only this into
@@ -185,14 +267,18 @@ def render_html(notes, copy):
 
 def main():
     notes = load_notes()
+    theme, featured_products = pick_theme_and_products()
     candidates = list_gemini_text_candidates()
-    copy, model = call_gemini(candidates, notes)
-    html = render_html(notes, copy)
+    copy, model = call_gemini(candidates, notes, theme, featured_products)
+    html = render_html(notes, copy, theme, featured_products)
+    commit_rotation_state()
 
     print(f"## 📬 Newsletter Draft — Week of {notes['week_of']}\n")
+    print(f"**Theme:** {theme}  ")
+    print(f"**Featured products:** {', '.join(p['name'] for p in featured_products)}\n")
     print(f"**Subject line:** {copy.get('subject_line','')}  ")
     print(f"**Preview text:** {copy.get('preview_text','')}\n")
-    print("### Copy-paste this into Shopify Email's HTML/code section (fragment only \u2014 don't wrap in <html>/<body>)\n")
+    print("### Copy-paste this into Shopify Email's HTML/code section (fragment only — don't wrap in <html>/<body>)\n")
     print("```html")
     print(html)
     print("```\n")

@@ -1,0 +1,62 @@
+{
+  "snapshotNote": "Manual snapshot of the live Shopify catalog (recessrejects.com), not a live API pull. Ask Claude to refresh this file from Shopify whenever products are added, removed, or repriced.",
+  "snapshotDate": "2026-07-31",
+  "products": [
+    {
+      "name": "The OG Tee",
+      "price": "13.50",
+      "description": "This is where it started. The logo. The mascot. The whole vibe. If you know, you know. And if you're wearing this, you're officially a Recess Reject.",
+      "image": "https://cdn.shopify.com/s/files/1/1024/7110/6928/files/unisex-staple-t-shirt-soft-cream-front-6a4ff9fb6282b.jpg?v=1783626254",
+      "url": "https://recessrejects.com/products/the-og-tee"
+    },
+    {
+      "name": "Last Picked. First to the Bar. Tee",
+      "price": "13.15",
+      "description": "You didn't make varsity. Neither did we. But you showed up, gave it everything you had, and now you're first in line at the bar — and that's what matters.",
+      "image": "https://cdn.shopify.com/s/files/1/1024/7110/6928/files/unisex-staple-t-shirt-soft-cream-front-6a4e7826339e6.jpg?v=1783527471",
+      "url": "https://recessrejects.com/products/last-picked-first-to-the-bar-tee"
+    },
+    {
+      "name": "Professional Amateur Tee",
+      "price": "13.15",
+      "description": "Technically qualified. Practically hopeless. You show up every week, you know the rules, you even have the right shoes. The scoreboard just doesn't care.",
+      "image": "https://cdn.shopify.com/s/files/1/1024/7110/6928/files/unisex-staple-t-shirt-soft-cream-front-6a4e79166bb22.jpg?v=1783527711",
+      "url": "https://recessrejects.com/products/professional-amateur-tee"
+    },
+    {
+      "name": "I Stretched For This Tee",
+      "price": "13.15",
+      "description": "You set your alarm. You showed up. You even stretched beforehand. The result? Irrelevant. The effort? Legendary. Built for every rec league player.",
+      "image": "https://cdn.shopify.com/s/files/1/1024/7110/6928/files/unisex-staple-t-shirt-soft-cream-front-6a4e6f99376cf.jpg?v=1783525282",
+      "url": "https://recessrejects.com/products/i-stretched-for-this-tee-1"
+    },
+    {
+      "name": "Undefeated at Post-Game Drinks Tee",
+      "price": "13.48",
+      "description": "0 losses. Not at kickball — at the bar after kickball. Some people play to win. You play to qualify for post-game drinks. And in that arena, you're undefeated.",
+      "image": "https://cdn.shopify.com/s/files/1/1024/7110/6928/files/unisex-staple-t-shirt-soft-cream-front-6a4e76bc49ad3.jpg?v=1783527111",
+      "url": "https://recessrejects.com/products/i-stretched-for-this-tee"
+    },
+    {
+      "name": "Thunder Pump Tee",
+      "price": "13.15",
+      "description": "Some call it a warm-up ritual. We call it a war cry. The Thunder Pump is the primal scream you let out before stepping up to kick.",
+      "image": "https://cdn.shopify.com/s/files/1/1024/7110/6928/files/unisex-staple-t-shirt-soft-cream-front-6a6967af06d26.jpg?v=1785292729",
+      "url": "https://recessrejects.com/products/thunder-pump-tee"
+    },
+    {
+      "name": "Recess Rejects OG Hoodie",
+      "price": "37.13",
+      "description": "The warmup you'll actually want to wear. Built for cool nights on the kickball field, post-game hangs at the bar, and every couch in between.",
+      "image": "https://cdn.shopify.com/s/files/1/1024/7110/6928/files/unisex-pullover-hoodie-black-front-6a512d570546a.jpg?v=1783704939",
+      "url": "https://recessrejects.com/products/recess-rejects-og-hoodie"
+    },
+    {
+      "name": "Recess Rejects Trucker Hat",
+      "price": "20.45",
+      "description": "The official hat of the athletically challenged. Rep the brand on the field, at the bar, and everywhere in between.",
+      "image": "https://cdn.shopify.com/s/files/1/1024/7110/6928/files/retro-trucker-hat-black-front-6a5000db9961c.jpg?v=1783628012",
+      "url": "https://recessrejects.com/products/recess-rejects-trucker-hat"
+    }
+  ]
+}

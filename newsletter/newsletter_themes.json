@@ -1,0 +1,12 @@
+{
+  "themes": [
+    "New arrivals spotlight — what just dropped and why it fits the rec league life",
+    "Fan-favorite roundup — the pieces people keep coming back for",
+    "Gear up for game day — pre-game essentials for showing up in style",
+    "Post-game essentials — what to wear once the game's over and the bar's calling",
+    "Rec league starter kit — the basics every beer-league athlete needs",
+    "Behind the brand — a little on the Recess Rejects story and why it exists",
+    "Comfort over competition — pieces built for the couch as much as the field"
+  ],
+  "rotationNote": "Script picks the next unused theme in order each week, cycling back to the start once the list is exhausted, same mechanism as config/themes.json for the Instagram pipeline. Add new angles here anytime."
+}
