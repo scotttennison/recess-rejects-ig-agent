@@ -1,19 +1,20 @@
 {
   "themes": [
-    "The walk of shame back to the outfield after striking out",
-    "Sandbagging your rec league team's skill level to the other team",
-    "Showing up to the kickball game still hungover from last week's game",
-    "The one guy/gal on the team who takes kickball way too seriously",
-    "Post-game bar tab being bigger than the league registration fee",
-    "Getting picked last but being first in line at the bar after",
-    "The unspoken rules of rec league kickball (no bunting, catch it or don't, etc.)",
-    "Rain delay energy - just move the game to the bar early",
-    "The team jersey doubling as a bar outfit",
-    "Kickball injuries that are definitely just from bar stools, not the game",
-    "The team captain group chat chaos before game day",
-    "Trading defense for a good seat at the bar afterward",
-    "New season, same last place finish, same great time",
-    "The unofficial MVP award going to whoever buys the first round"
+    "Kickball is a lifestyle. A deeply unserious lifestyle.",
+    "Full send on a Friday, no regrets, no stretching",
+    "We don't play for fun. We play for bragging rights nobody asked for.",
+    "Trash talk game stronger than our actual game",
+    "We wore matching jerseys for a sport with no salary cap",
+    "This is Olympic-level commitment to a schoolyard sport",
+    "Our team chat has more drama than the actual game",
+    "We treat Friday night kickball like it's the World Series",
+    "Full send energy, zero athletic ability required",
+    "A win on the field is just the undercard. The real main event has a tab.",
+    "We didn't lose the season, we just swept a different kind of tab",
+    "Our pregame ritual has more rules than the actual game",
+    "We scout the other team like it's the NFL combine",
+    "Rec league rankings mean everything and nothing at the same time, especially after a few drinks",
+    "We show up with more gear than the sport requires"
   ],
   "rotationNote": "Script picks the next unused theme in order, cycling back to the start once the list is exhausted. Add new kickball-specific themes here anytime; expand to other sports once they're live in the store."
 }
