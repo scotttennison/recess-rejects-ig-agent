@@ -1,0 +1,49 @@
+name: Buffer Asset Health Check
+
+# Catches Buffer's intermittent 0x0 duplicate-asset bug (a sent post ending
+# up with a corrupt zero-dimension image asset alongside the real one) on a
+# schedule, instead of waiting for someone to notice a blank post live.
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+
+jobs:
+  check-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check recent Buffer posts for the 0x0 duplicate-asset bug
+        env:
+          BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+          BUFFER_CHANNEL_ID: ${{ secrets.BUFFER_CHANNEL_ID }}
+        run: node scripts/check-buffer-assets.mjs
+
+      - name: Alert on broken image asset
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Buffer post found with broken (0x0) image asset — run #${context.runNumber}`,
+              body: [
+                "The Buffer asset health check found one or more recently-sent posts with a corrupt zero-dimension image asset — the known Buffer-side bug that can cause a post to publish with no visible image.",
+                "",
+                `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                "",
+                "Check the run log for the affected post ID(s), then verify the live post on Instagram and repost via Buffer if the image is missing."
+              ].join("\n"),
+              labels: ["automation-failure", "buffer-asset-bug"]
+            });
