@@ -214,15 +214,15 @@ def render_html(notes, copy, theme, featured_products):
     # do NOT wrap it in <html>/<body>, Shopify strips that wrapper anyway and
     # taking it out ourselves avoids losing spacing along with it.
     return f"""<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2ece0;">
-<tr><td align="center" style="padding:24px 0;">
-<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#fffdf8;border-radius:8px;">
+<tr><td align="center" style="text-align:center;padding:24px 0;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#fffdf8;border-radius:8px;margin:0 auto;">
 
 <tr><td style="background-color:#c0392b;padding:28px 32px;text-align:center;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 <tr><td align="center" style="text-align:center;padding-bottom:10px;">
 <img src="https://raw.githubusercontent.com/scotttennison/recess-rejects-ig-agent/main/assets/NameLogo.png" alt="RECESS REJECTS" width="220" style="display:block;margin:0 auto;max-width:220px;height:auto;border:0;">
 </td></tr>
-<tr><td align="center" style="font-family:Arial,Helvetica,sans-serif;color:#f2ece0;font-size:13px;letter-spacing:1px;">LAST PICKED. FIRST TO THE BAR.</td></tr>
+<tr><td align="center" style="text-align:center;font-family:Arial,Helvetica,sans-serif;color:#f2ece0;font-size:13px;letter-spacing:1px;">LAST PICKED. FIRST TO THE BAR.</td></tr>
 </table>
 </td></tr>
 
