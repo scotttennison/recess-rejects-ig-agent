@@ -190,17 +190,25 @@ Return ONLY raw JSON (no markdown fences, no preamble) matching this shape:
     raise RuntimeError(f"All Gemini model candidates failed. Last error: {last_error}")
 
 
+def add_utm(url):
+    """Tags outbound product links so newsletter-driven sessions show up
+    under a real source in Shopify analytics instead of blank referrer —
+    same gap found on the Instagram bio link."""
+    sep = "&" if "?" in url else "?"
+    return f"{url}{sep}utm_source=newsletter&utm_medium=email"
+
+
 def render_html(notes, copy, theme, featured_products):
     blurbs = copy.get("product_blurbs", {})
     products_html = "".join(
         f'<tr><td style="padding:12px 0;border-bottom:1px solid #e8e2d6;font-family:Arial,Helvetica,sans-serif;">'
         f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
         f'<td width="90" style="padding-right:16px;vertical-align:top;">'
-        f'<a href="{p["url"]}"><img src="{p["image"]}" width="90" height="90" alt="{p["name"]}" '
+        f'<a href="{add_utm(p["url"])}"><img src="{p["image"]}" width="90" height="90" alt="{p["name"]}" '
         f'style="display:block;border-radius:6px;object-fit:cover;"></a>'
         f'</td>'
         f'<td style="vertical-align:top;">'
-        f'<a href="{p["url"]}" style="text-decoration:none;">'
+        f'<a href="{add_utm(p["url"])}" style="text-decoration:none;">'
         f'<span style="color:#1a1a1a;font-size:15px;font-weight:bold;">{p["name"]}</span></a>'
         f'<br><span style="color:#c0392b;font-size:14px;font-weight:bold;">${p["price"]}</span>'
         f'<br><span style="color:#4a4a4a;font-size:14px;">{blurbs.get(p["name"], "")}</span>'
