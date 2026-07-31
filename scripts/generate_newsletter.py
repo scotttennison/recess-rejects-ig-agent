@@ -219,7 +219,9 @@ def render_html(notes, copy, theme, featured_products):
 
 <tr><td style="background-color:#c0392b;padding:28px 32px;text-align:center;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-<tr><td align="center" style="font-family:Arial,Helvetica,sans-serif;color:#fffdf8;font-size:26px;font-weight:bold;letter-spacing:0.5px;padding-bottom:6px;">RECESS REJECTS</td></tr>
+<tr><td align="center" style="padding-bottom:10px;">
+<img src="https://raw.githubusercontent.com/scotttennison/recess-rejects-ig-agent/main/assets/NameLogo.png" alt="RECESS REJECTS" width="220" style="display:inline-block;max-width:220px;height:auto;border:0;">
+</td></tr>
 <tr><td align="center" style="font-family:Arial,Helvetica,sans-serif;color:#f2ece0;font-size:13px;letter-spacing:1px;">LAST PICKED. FIRST TO THE BAR.</td></tr>
 </table>
 </td></tr>
