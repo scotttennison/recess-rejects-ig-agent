@@ -210,10 +210,18 @@ def add_utm(url):
     return f"{url}{sep}utm_source=newsletter&utm_medium=email"
 
 
+def find_blurb(product_name, raw_blurbs):
+    """Gemini doesn't always echo the product name key exactly as given
+    (e.g. appends the price), so match by prefix rather than equality."""
+    name_norm = product_name.strip().lower()
+    for key, blurb in raw_blurbs.items():
+        if key.strip().lower().startswith(name_norm):
+            return blurb
+    return ""
+
+
 def render_html(notes, copy, theme, featured_products):
     raw_blurbs = copy.get("product_blurbs", {})
-    print(f"DEBUG product_blurbs keys={list(raw_blurbs.keys())!r} product_names={[p['name'] for p in featured_products]!r}", file=sys.stderr)
-    blurbs = {k.strip().lower(): v for k, v in raw_blurbs.items()}
     products_html = "".join(
         f'<tr><td style="padding:12px 0;border-bottom:1px solid #e8e2d6;font-family:Arial,Helvetica,sans-serif;">'
         f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
@@ -225,7 +233,7 @@ def render_html(notes, copy, theme, featured_products):
         f'<a href="{add_utm(p["url"])}" style="text-decoration:none;">'
         f'<span style="color:#1a1a1a;font-size:15px;font-weight:bold;">{p["name"]}</span></a>'
         f'<br><span style="color:#c0392b;font-size:14px;font-weight:bold;">${p["price"]}</span>'
-        f'<br><span style="color:#4a4a4a;font-size:14px;">{blurbs.get(p["name"].strip().lower(), "")}</span>'
+        f'<br><span style="color:#4a4a4a;font-size:14px;">{find_blurb(p["name"], raw_blurbs)}</span>'
         f'</td>'
         f'</tr></table></td></tr>'
         for p in featured_products
