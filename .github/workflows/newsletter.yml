@@ -33,4 +33,4 @@ jobs:
       - name: Generate newsletter draft
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python scripts/generate_newsletter.py | tee -a "$GITHUB_STEP_SUMMARY"
+        run: python scripts/generate_newsletter.py >> "$GITHUB_STEP_SUMMARY"
