@@ -30,9 +30,6 @@ from datetime import date
 import requests
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-if not GEMINI_API_KEY:
-    print("::error::GEMINI_API_KEY is not set")
-    sys.exit(1)
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NOTES_PATH = os.path.join(REPO_ROOT, "newsletter", "weekly_notes.json")
@@ -298,6 +295,10 @@ def render_html(notes, copy, theme, featured_products):
 
 
 def main():
+    if not GEMINI_API_KEY:
+        print("::error::GEMINI_API_KEY is not set")
+        sys.exit(1)
+
     notes = load_notes()
     theme, featured_products = pick_theme_and_products()
     candidates = list_gemini_text_candidates()
