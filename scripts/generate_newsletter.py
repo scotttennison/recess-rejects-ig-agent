@@ -212,7 +212,7 @@ def add_utm(url):
 
 def render_html(notes, copy, theme, featured_products):
     raw_blurbs = copy.get("product_blurbs", {})
-    print(f"::debug:: product_blurbs keys={list(raw_blurbs.keys())!r} product_names={[p['name'] for p in featured_products]!r}", file=sys.stderr)
+    print(f"DEBUG product_blurbs keys={list(raw_blurbs.keys())!r} product_names={[p['name'] for p in featured_products]!r}", file=sys.stderr)
     blurbs = {k.strip().lower(): v for k, v in raw_blurbs.items()}
     products_html = "".join(
         f'<tr><td style="padding:12px 0;border-bottom:1px solid #e8e2d6;font-family:Arial,Helvetica,sans-serif;">'
