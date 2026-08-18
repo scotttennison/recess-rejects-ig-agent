@@ -49,6 +49,18 @@ Voice: "Grunt Style for adult rec league sports" - funny, self-aware, a little c
 loves the beer-league athlete identity. Slogan: "Last Picked. First to the Bar."
 Never corporate, never earnest. Short punchy sentences. Rec league humor
 (kickball, dodgeball, bocce, cornhole, pickleball, forfeits, post-game pitchers).
+
+This newsletter should be genuinely funny, not just "on brand" - the kind of email
+someone forwards to their team group chat because it made them laugh. Go for actual
+jokes and punchlines, not just a wry tone:
+- Use exaggeration and specific, absurd rec-league detail over generic humor
+  ("sprinted 12 feet and needed a substitution" beats "not very athletic")
+- Self-deprecating > mean-spirited, always
+- Every section (headline, intro, promo, each product blurb, IG recap, sign-off)
+  should land at least one real joke or punchline, not just describe the thing
+- Vary the joke structure between sections so it doesn't all read the same
+  (a one-liner, a mock-serious stat, a fake excuse, an aside in parentheses, etc.)
+- If a line doesn't make you smirk while writing it, rewrite it
 """
 
 
@@ -198,8 +210,18 @@ def add_utm(url):
     return f"{url}{sep}utm_source=newsletter&utm_medium=email"
 
 
+def find_blurb(product_name, raw_blurbs):
+    """Gemini doesn't always echo the product name key exactly as given
+    (e.g. appends the price), so match by prefix rather than equality."""
+    name_norm = product_name.strip().lower()
+    for key, blurb in raw_blurbs.items():
+        if key.strip().lower().startswith(name_norm):
+            return blurb
+    return ""
+
+
 def render_html(notes, copy, theme, featured_products):
-    blurbs = copy.get("product_blurbs", {})
+    raw_blurbs = copy.get("product_blurbs", {})
     products_html = "".join(
         f'<tr><td style="padding:12px 0;border-bottom:1px solid #e8e2d6;font-family:Arial,Helvetica,sans-serif;">'
         f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>'
@@ -211,7 +233,7 @@ def render_html(notes, copy, theme, featured_products):
         f'<a href="{add_utm(p["url"])}" style="text-decoration:none;">'
         f'<span style="color:#1a1a1a;font-size:15px;font-weight:bold;">{p["name"]}</span></a>'
         f'<br><span style="color:#c0392b;font-size:14px;font-weight:bold;">${p["price"]}</span>'
-        f'<br><span style="color:#4a4a4a;font-size:14px;">{blurbs.get(p["name"], "")}</span>'
+        f'<br><span style="color:#4a4a4a;font-size:14px;">{find_blurb(p["name"], raw_blurbs)}</span>'
         f'</td>'
         f'</tr></table></td></tr>'
         for p in featured_products
