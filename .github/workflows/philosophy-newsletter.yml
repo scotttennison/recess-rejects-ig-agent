@@ -1,0 +1,36 @@
+name: Philosophy vs. Kickball Newsletter
+
+on:
+  # Every Monday 15:00 UTC (~ Monday 8am Pacific)
+  schedule:
+    - cron: '0 15 * * 1'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+# Prevent overlapping runs from racing each other's rotation-state push.
+concurrency:
+  group: philosophy-newsletter
+  cancel-in-progress: false
+
+jobs:
+  send-philosophy-newsletter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate and send philosophy newsletter
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: python scripts/generate_philosophy_newsletter.py >> "$GITHUB_STEP_SUMMARY"
