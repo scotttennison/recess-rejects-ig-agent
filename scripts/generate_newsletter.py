@@ -49,6 +49,18 @@ Voice: "Grunt Style for adult rec league sports" - funny, self-aware, a little c
 loves the beer-league athlete identity. Slogan: "Last Picked. First to the Bar."
 Never corporate, never earnest. Short punchy sentences. Rec league humor
 (kickball, dodgeball, bocce, cornhole, pickleball, forfeits, post-game pitchers).
+
+This newsletter should be genuinely funny, not just "on brand" - the kind of email
+someone forwards to their team group chat because it made them laugh. Go for actual
+jokes and punchlines, not just a wry tone:
+- Use exaggeration and specific, absurd rec-league detail over generic humor
+  ("sprinted 12 feet and needed a substitution" beats "not very athletic")
+- Self-deprecating > mean-spirited, always
+- Every section (headline, intro, promo, each product blurb, IG recap, sign-off)
+  should land at least one real joke or punchline, not just describe the thing
+- Vary the joke structure between sections so it doesn't all read the same
+  (a one-liner, a mock-serious stat, a fake excuse, an aside in parentheses, etc.)
+- If a line doesn't make you smirk while writing it, rewrite it
 """
 
 
